@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VENOM // AGENT HUB</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --red: #ff2020;
+      --gold: #c8a878;
+      --dark: #080808;
+      --panel: #0a0a0a;
+      --border: #111;
+      --dim: #222;
+      --text: #888;
+      --bright: #f0f0f0;
+    }
+
+    body {
+      background: var(--dark);
+      color: var(--bright);
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* SCAN LINE OVERLAY */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.03) 2px,
+        rgba(0,0,0,0.03) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* THREE.JS CANVAS */
+    #bg-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      opacity: 0.15;
+    }
+
+    .content { position: relative; z-index: 1; }
+
+    /* TOP BAR */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 60px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(8,8,8,0.95);
+      backdrop-filter: blur(10px);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+    }
+    .logo-text {
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+    }
+    .logo-text span { color: var(--red); }
+    .nav-item {
+      font-size: 9px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--dim);
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .nav-item:hover, .nav-item.active { color: var(--text); }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .sys-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: #2cff5e;
+    }
+    .sys-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: #2cff5e;
+      animation: blink 2s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .clock-display {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      color: var(--dim);
+      letter-spacing: 2px;
+    }
+
+    /* GLITCH CREW */
+    .crew {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+    .crew-name {
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      position: relative;
+      cursor: default;
+    }
+    .crew-name.v1 { color: var(--red); animation: glitch1 4s infinite; }
+    .crew-name.v2 { color: #333; animation: glitch2 5s infinite 1s; }
+    .crew-name.v3 { color: #2a2a2a; animation: glitch3 6s infinite 2s; }
+
+    .crew-name::before,
+    .crew-name::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0; left: 0;
+      opacity: 0;
+    }
+    .crew-name.v1::before { color: #00ffff; clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%); animation: glitch-clip1 4s infinite; }
+    .crew-name.v1::after  { color: #ff00ff; clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%); animation: glitch-clip2 4s infinite; }
+
+    @keyframes glitch1 {
+      0%,90%,100% { transform: translate(0); color: var(--red); }
+      92% { transform: translate(-2px, 1px); color: #ff6060; }
+      94% { transform: translate(2px, -1px); color: var(--red); }
+      96% { transform: translate(-1px, 0); }
+    }
+    @keyframes glitch2 {
+      0%,88%,100% { transform: translate(0); color: #333; }
+      90% { transform: translate(1px, -1px); color: #555; }
+      93% { transform: translate(-1px, 1px); color: #333; }
+    }
+    @keyframes glitch3 {
+      0%,85%,100% { transform: translate(0); color: #2a2a2a; }
+      87% { transform: translate(-2px, 0); color: #444; }
+      90% { transform: translate(1px, 1px); color: #2a2a2a; }
+    }
+    @keyframes glitch-clip1 {
+      0%,90%,100% { opacity: 0; transform: translate(0); }
+      92% { opacity: 0.8; transform: translate(-3px, 0); }
+      94% { opacity: 0; }
+    }
+    @keyframes glitch-clip2 {
+      0%,91%,100% { opacity: 0; transform: translate(0); }
+      93% { opacity: 0.7; transform: translate(3px, 0); }
+      95% { opacity: 0; }
+    }
+
+    /* HERO */
+    .hero {
+      padding: 80px 60px 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .hero-title {
+      font-size: 88px;
+      font-weight: 900;
+      letter-spacing: -4px;
+      line-height: 0.9;
+      text-transform: uppercase;
+    }
+    .hero-title .line2 { color: var(--red); }
+    .hero-sub {
+      font-size: 10px;
+      letter-spacing: 5px;
+      color: var(--dim);
+      margin-top: 20px;
+      text-transform: uppercase;
+    }
+    .hero-right {
+      text-align: right;
+      padding-bottom: 8px;
+    }
+    .hero-stat {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--dim);
+      letter-spacing: 2px;
+      line-height: 2;
+    }
+    .hero-stat span { color: var(--text); }
+
+    /* DIVIDER */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--red), var(--dim), transparent);
+      margin: 0 60px;
+      opacity: 0.4;
+    }
+
+    /* AGENT GRID */
+    .section { padding: 60px; }
+    .section-label {
+      font-size: 9px;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 40px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .agent-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+    }
+
+    .agent-card {
+      background: var(--dark);
+      padding: 48px 40px;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .agent-card:hover { background: #0c0c0c; }
+
+    /* Active top border */
+    .agent-card.active::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--red);
+    }
+    .agent-card.pending::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: var(--dim);
+    }
+
+    /* Watermark number */
+    .card-num {
+      position: absolute;
+      right: -10px; bottom: -20px;
+      font-size: 140px;
+      font-weight: 900;
+      color: rgba(255,255,255,0.02);
+      line-height: 1;
+      letter-spacing: -8px;
+      user-select: none;
+    }
+
+    .card-status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+    .card-status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 9px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+    }
+    .status-dot.online { background: #2cff5e; animation: blink 2s infinite; }
+    .status-dot.pending { background: var(--gold); animation: blink 3s infinite; }
+    .status-dot.offline { background: var(--dim); }
+
+    .card-id {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      color: var(--dim);
+      letter-spacing: 2px;
+    }
+
+    .card-name {
+      font-size: 44px;
+      font-weight: 900;
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .card-name.red { color: var(--red); }
+    .card-name.dim { color: #1a1a1a; }
+
+    .card-role {
+      font-size: 9px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 36px;
+    }
+
+    .card-metrics {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .metric {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      font-size: 11px;
+    }
+    .metric:last-child { border-bottom: none; }
+    .metric-key { color: var(--dim); letter-spacing: 1px; }
+    .metric-val { color: var(--text); font-weight: 500; }
+    .metric-val.green { color: #2cff5e; }
+    .metric-val.red { color: var(--red); }
+    .metric-val.gold { color: var(--gold); }
+    .metric-val.ghost { color: #1a1a1a; }
+
+    /* BOTTOM PANELS */
+    .bottom-section {
+      padding: 0 60px 60px;
+      display: grid;
+      grid-template-columns: 3fr 1fr;
+      gap: 1px;
+      background: var(--border);
+    }
+
+    .panel {
+      background: var(--dark);
+      padding: 40px;
+    }
+    .panel-header {
+      font-size: 9px;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .log-line {
+      display: flex;
+      gap: 20px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.02);
+      align-items: baseline;
+    }
+    .log-time {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      color: var(--dim);
+      white-space: nowrap;
+      min-width: 50px;
+    }
+    .log-agent {
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--red);
+      white-space: nowrap;
+      min-width: 70px;
+    }
+    .log-msg { font-size: 12px; color: #3a3a3a; }
+    .log-msg strong { color: #555; }
+
+    .sys-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 11px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.02);
+      font-size: 11px;
+    }
+    .sys-row:last-child { border-bottom: none; }
+    .sys-key { color: var(--dim); }
+    .sys-val { color: var(--text); }
+    .sys-val.ok { color: #2cff5e; }
+    .sys-val.gold { color: var(--gold); }
+    .sys-val.red { color: var(--red); }
+
+    /* FOOTER */
+    footer {
+      padding: 20px 60px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-text {
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: #161616;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<!-- THREE.JS PARTICLE BG -->
+<canvas id="bg-canvas"></canvas>
+
+<div class="content">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="logo-text">VENOM<span>//</span>HUB</div>
+      <div class="nav-item active">Agents</div>
+      <div class="nav-item">System</div>
+      <div class="nav-item">Logs</div>
+    </div>
+    <div class="topbar-right">
+      <div class="crew">
+        <div class="crew-name v1" data-text="VENOM">VENOM</div>
+        <div class="crew-name v2" data-text="GRAVE DIGGER">GRAVE DIGGER</div>
+        <div class="crew-name v3" data-text="REAPER">REAPER</div>
+      </div>
+      <div class="sys-status"><div class="sys-dot"></div>ALL SYSTEMS NOMINAL</div>
+      <div class="clock-display" id="clock">--:--:--</div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div>
+      <div class="hero-title">
+        <div>AGENT</div>
+        <div class="line2">HUB</div>
+      </div>
+      <div class="hero-sub">GEKKO Agency B.V. &nbsp;///&nbsp; Operational Command</div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-stat">HOST &nbsp;<span>Mac Mini M4 Pro</span></div>
+      <div class="hero-stat">RAM &nbsp;<span>24 GB</span></div>
+      <div class="hero-stat">UPTIME &nbsp;<span id="uptime">calculating...</span></div>
+      <div class="hero-stat">AGENTS ONLINE &nbsp;<span style="color:var(--red)">1 / 3</span></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- AGENTS -->
+  <div class="section">
+    <div class="section-label">Deployed Agents</div>
+    <div class="agent-grid">
+
+      <!-- VENOM -->
+      <div class="agent-card active">
+        <div class="card-status-row">
+          <div class="card-status">
+            <div class="status-dot online"></div>
+            <span style="color:#2cff5e">Online</span>
+          </div>
+          <div class="card-id">AGT-001</div>
+        </div>
+        <div class="card-name red">VENOM</div>
+        <div class="card-role">Chief of Staff — Ruben Verhagen</div>
+        <div class="card-metrics">
+          <div class="metric"><span class="metric-key">Model</span><span class="metric-val">Claude Sonnet 4.6</span></div>
+          <div class="metric"><span class="metric-key">Access</span><span class="metric-val green">Root / Full Disk</span></div>
+          <div class="metric"><span class="metric-key">Channel</span><span class="metric-val">Telegram</span></div>
+          <div class="metric"><span class="metric-key">TTS</span><span class="metric-val">ElevenLabs Adam</span></div>
+          <div class="metric"><span class="metric-key">Trader</span><span class="metric-val green">● Live — SOL + LINK</span></div>
+          <div class="metric"><span class="metric-key">Crons</span><span class="metric-val green">3 Active</span></div>
+          <div class="metric"><span class="metric-key">Uptime</span><span class="metric-val green">24/7 — Never Sleeps</span></div>
+        </div>
+        <div class="card-num">01</div>
+      </div>
+
+      <!-- GRAVE DIGGER / KOEN -->
+      <div class="agent-card pending">
+        <div class="card-status-row">
+          <div class="card-status">
+            <div class="status-dot pending"></div>
+            <span style="color:var(--gold)">Deploying Soon</span>
+          </div>
+          <div class="card-id">AGT-002</div>
+        </div>
+        <div class="card-name" style="color:#1f1f1f">GRAVE</div>
+        <div class="card-name" style="color:#1f1f1f; font-size:30px; margin-top:-8px; margin-bottom:8px;">DIGGER</div>
+        <div class="card-role" style="color:#151515">Personal Agent — Koen Verhagen</div>
+        <div class="card-metrics">
+          <div class="metric"><span class="metric-key">Model</span><span class="metric-val ghost">TBD</span></div>
+          <div class="metric"><span class="metric-key">Access</span><span class="metric-val ghost">TBD</span></div>
+          <div class="metric"><span class="metric-key">Channel</span><span class="metric-val ghost">Telegram</span></div>
+          <div class="metric"><span class="metric-key">TTS</span><span class="metric-val ghost">TBD</span></div>
+          <div class="metric"><span class="metric-key">Crons</span><span class="metric-val ghost">—</span></div>
+          <div class="metric"><span class="metric-key">Status</span><span class="metric-val gold">Awaiting setup</span></div>
+          <div class="metric"><span class="metric-key">Reports to</span><span class="metric-val" style="color:#222">Venom</span></div>
+        </div>
+        <div class="card-num">02</div>
+      </div>
+
+      <!-- VINCE -->
+      <div class="agent-card pending">
+        <div class="card-status-row">
+          <div class="card-status">
+            <div class="status-dot pending"></div>
+            <span style="color:var(--gold)">Deploying Soon</span>
+          </div>
+          <div class="card-id">AGT-003</div>
+        </div>
+        <div class="card-name" style="color:#1f1f1f">REAPER</div>
+        <div class="card-role" style="color:#151515">Personal Agent — Vincent Verhagen</div>
+        <div class="card-metrics">
+          <div class="metric"><span class="metric-key">Model</span><span class="metric-val ghost">TBD</span></div>
+          <div class="metric"><span class="metric-key">Access</span><span class="metric-val ghost">TBD</span></div>
+          <div class="metric"><span class="metric-key">Channel</span><span class="metric-val ghost">Telegram</span></div>
+          <div class="metric"><span class="metric-key">TTS</span><span class="metric-val ghost">TBD</span></div>
+          <div class="metric"><span class="metric-key">Crons</span><span class="metric-val ghost">—</span></div>
+          <div class="metric"><span class="metric-key">Status</span><span class="metric-val gold">Awaiting setup</span></div>
+          <div class="metric"><span class="metric-key">Reports to</span><span class="metric-val" style="color:#222">Venom</span></div>
+        </div>
+        <div class="card-num">03</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BOTTOM -->
+  <div class="bottom-section">
+    <div class="panel">
+      <div class="panel-header">Activity Log — 9 maart 2026</div>
+      <div class="log-line"><div class="log-time">23:43</div><div class="log-agent">VENOM</div><div class="log-msg"><strong>TRADER LIVE</strong> — launchd service gestart, 18 trades meegenomen, €243.82</div></div>
+      <div class="log-line"><div class="log-time">23:34</div><div class="log-agent">VENOM</div><div class="log-msg"><strong>FULL ACCESS</strong> — sudo root, full disk, accessibility, screen recording</div></div>
+      <div class="log-line"><div class="log-time">23:25</div><div class="log-agent">VENOM</div><div class="log-msg"><strong>MAC MINI LIVE</strong> — migratie voltooid, dag 1 gemarkeerd 🕷</div></div>
+      <div class="log-line"><div class="log-time">23:07</div><div class="log-agent">VENOM</div><div class="log-msg"><strong>SSH TUNNEL</strong> — NordVPN meshnet, remote installatie gestart</div></div>
+      <div class="log-line"><div class="log-time">22:41</div><div class="log-agent">VENOM</div><div class="log-msg"><strong>OPENCLAW INSTALLED</strong> — Node v25.8 / OpenClaw 2026.3.8</div></div>
+      <div class="log-line"><div class="log-time">22:04</div><div class="log-agent">SYSTEM</div><div class="log-msg"><strong>MAC MINI M4 PRO</strong> aangekomen op kantoor GEKKO, Rotterdam</div></div>
+      <div class="log-line"><div class="log-time">09:00</div><div class="log-agent">CRON</div><div class="log-msg"><strong>MORNING BRIEF</strong> verzonden — portfolio + email + markt + crypto</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">System</div>
+      <div class="sys-row"><span class="sys-key">Host</span><span class="sys-val ok">Mac Mini M4 Pro</span></div>
+      <div class="sys-row"><span class="sys-key">OS</span><span class="sys-val">macOS 15.6</span></div>
+      <div class="sys-row"><span class="sys-key">RAM</span><span class="sys-val ok">24 GB</span></div>
+      <div class="sys-row"><span class="sys-key">Storage</span><span class="sys-val">512 GB SSD</span></div>
+      <div class="sys-row"><span class="sys-key">Sleep</span><span class="sys-val ok">Disabled</span></div>
+      <div class="sys-row"><span class="sys-key">Gateway</span><span class="sys-val ok">pid 10695</span></div>
+      <div class="sys-row"><span class="sys-key">Port</span><span class="sys-val">18789</span></div>
+      <div class="sys-row"><span class="sys-key">Trader</span><span class="sys-val ok">● Live</span></div>
+      <div class="sys-row"><span class="sys-key">Network</span><span class="sys-val gold">NordVPN Mesh</span></div>
+      <div class="sys-row"><span class="sys-key">Sudo</span><span class="sys-val red">NOPASSWD</span></div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-text">GEKKO Agency B.V. &nbsp;///&nbsp; Agent Hub v1.0 &nbsp;///&nbsp; 9 maart 2026</div>
+    <div class="footer-text">VENOM 🖤 &nbsp;///&nbsp; Altijd Aan &nbsp;///&nbsp; Mac Mini M4 Pro</div>
+  </footer>
+
+</div>
+
+<script>
+  // Auth check
+  if (!sessionStorage.getItem('agent-hub-auth')) {
+    window.location.href = 'login.html';
+  }
+
+  // Clock
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('clock').textContent = now.toLocaleTimeString('nl-NL');
+  }
+  updateClock(); setInterval(updateClock, 1000);
+
+  // Uptime
+  const start = Date.now();
+  function updateUptime() {
+    const d = Date.now() - start;
+    const h = Math.floor(d/3600000), m = Math.floor((d%3600000)/60000), s = Math.floor((d%60000)/1000);
+    document.getElementById('uptime').textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+  updateUptime(); setInterval(updateUptime, 1000);
+
+  // MATRIX RAIN
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const fontSize = 13;
+  const chars = 'VENOMGEKKO01アイウエオカキクケコサシスセソタチツテトナニヌネノ▓▒░█▄▀■□◆◇⬛01';
+  const cols = Math.floor(canvas.width / fontSize);
+  const drops = Array(cols).fill(1);
+
+  function drawMatrix() {
+    ctx.fillStyle = 'rgba(8, 8, 8, 0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    for (let i = 0; i < drops.length; i++) {
+      const char = chars[Math.floor(Math.random() * chars.length)];
+      const x = i * fontSize;
+      const y = drops[i] * fontSize;
+
+      // Head = bright red, tail fades
+      if (drops[i] * fontSize > canvas.height - fontSize * 3) {
+        ctx.fillStyle = '#ff4444';
+      } else if (Math.random() > 0.95) {
+        ctx.fillStyle = '#ffffff';
+      } else {
+        ctx.fillStyle = '#cc0000';
+      }
+
+      ctx.font = `${fontSize}px monospace`;
+      ctx.fillText(char, x, y);
+
+      if (y > canvas.height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+      drops[i]++;
+    }
+  }
+
+  setInterval(drawMatrix, 40);
+
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+</script>
+
+</body>
+</html>

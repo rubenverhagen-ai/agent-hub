@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VENOM // ACCESS</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #080808;
+      color: #f0f0f0;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      opacity: 0.12;
+    }
+    .login-box {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      width: 340px;
+    }
+    .title {
+      font-size: 52px;
+      font-weight: 900;
+      letter-spacing: -2px;
+      margin-bottom: 4px;
+    }
+    .title span { color: #ff2020; }
+    .subtitle {
+      font-size: 9px;
+      letter-spacing: 5px;
+      color: #222;
+      text-transform: uppercase;
+      margin-bottom: 48px;
+    }
+    .input-wrap {
+      position: relative;
+      margin-bottom: 16px;
+    }
+    input {
+      width: 100%;
+      background: #0e0e0e;
+      border: 1px solid #1a1a1a;
+      color: #888;
+      padding: 16px 20px;
+      font-size: 13px;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      letter-spacing: 3px;
+      outline: none;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+    input:focus { border-color: #ff2020; color: #f0f0f0; }
+    input::placeholder { color: #222; letter-spacing: 2px; }
+    button {
+      width: 100%;
+      background: #ff2020;
+      border: none;
+      color: #080808;
+      padding: 16px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      transition: background 0.2s;
+    }
+    button:hover { background: #ff4444; }
+    .error {
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: #ff2020;
+      margin-top: 16px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      text-transform: uppercase;
+    }
+    .error.show { opacity: 1; }
+  </style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="login-box">
+  <div class="title">AGENT<span>//</span>HUB</div>
+  <div class="subtitle">GEKKO Agency B.V. — Restricted Access</div>
+  <div class="input-wrap">
+    <input type="password" id="pw" placeholder="ACCESS CODE" onkeydown="if(event.key==='Enter')auth()">
+  </div>
+  <button onclick="auth()">ENTER</button>
+  <div class="error" id="err">ACCESS DENIED</div>
+</div>
+<script>
+  function auth() {
+    const pw = document.getElementById('pw').value;
+    const hash = btoa(unescape(encodeURIComponent(pw)));
+    if (hash === btoa('pepernood')) {
+      sessionStorage.setItem('agent-hub-auth', '1');
+      window.location.href = 'index.html';
+    } else {
+      const e = document.getElementById('err');
+      e.classList.add('show');
+      document.getElementById('pw').value = '';
+      setTimeout(() => e.classList.remove('show'), 2000);
+    }
+  }
+
+  // Matrix rain
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const cols = Math.floor(canvas.width / 13);
+  const drops = Array(cols).fill(1);
+  const chars = 'VENOMGEKKO01アイウエオ▓▒░█';
+  setInterval(() => {
+    ctx.fillStyle = 'rgba(8,8,8,0.05)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#cc0000';
+    ctx.font = '13px monospace';
+    for (let i = 0; i < drops.length; i++) {
+      ctx.fillText(chars[Math.floor(Math.random()*chars.length)], i*13, drops[i]*13);
+      if (drops[i]*13 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    }
+  }, 40);
+</script>
+</body>
+</html>
