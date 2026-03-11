@@ -441,6 +441,7 @@
         <div class="crew-name v1" data-text="VENOM">VENOM</div>
         <div class="crew-name v2" data-text="GRAVE DIGGER">GRAVE DIGGER</div>
         <div class="crew-name v3" data-text="REAPER">REAPER</div>
+        <div class="crew-name" style="color:var(--gold);animation:glitch2 6s infinite 3s" data-text="MIDAS">MIDAS</div>
       </div>
       <div class="sys-status"><div class="sys-dot"></div>ALL SYSTEMS NOMINAL</div>
       <div class="clock-display" id="clock">--:--:--</div>
@@ -460,7 +461,7 @@
       <div class="hero-stat">HOST &nbsp;<span>Mac Mini M4 Pro</span></div>
       <div class="hero-stat">RAM &nbsp;<span>24 GB</span></div>
       <div class="hero-stat">UPTIME &nbsp;<span id="uptime">calculating...</span></div>
-      <div class="hero-stat">AGENTS ONLINE &nbsp;<span style="color:var(--red)">1 / 3</span></div>
+      <div class="hero-stat">AGENTS ONLINE &nbsp;<span style="color:var(--red)">2 / 4</span></div>
     </div>
   </div>
 
@@ -541,6 +542,30 @@
         <div class="card-num">03</div>
       </div>
 
+      <!-- MIDAS -->
+      <div class="agent-card active" style="--accent:var(--gold)">
+        <div class="card-status-row">
+          <div class="card-status">
+            <div class="status-dot online" style="background:var(--gold)"></div>
+            <span style="color:var(--gold)">Online</span>
+          </div>
+          <div class="card-id">AGT-004</div>
+        </div>
+        <div class="card-name" style="color:var(--gold)">MIDAS</div>
+        <div class="card-role">Finance Agent — Jasmijn Kerklaan</div>
+        <div class="card-metrics">
+          <div class="metric"><span class="metric-key">Model</span><span class="metric-val">Claude Sonnet 4.6</span></div>
+          <div class="metric"><span class="metric-key">Access</span><span class="metric-val gold">Finance / Exact Online</span></div>
+          <div class="metric"><span class="metric-key">Channel</span><span class="metric-val">Telegram</span></div>
+          <div class="metric"><span class="metric-key">Domain</span><span class="metric-val gold">B2B Facturen / BTW / PO</span></div>
+          <div class="metric"><span class="metric-key">Exact API</span><span class="metric-val gold">Pending</span></div>
+          <div class="metric"><span class="metric-key">Workspace</span><span class="metric-val">workspace-midas</span></div>
+          <div class="metric"><span class="metric-key">Reports to</span><span class="metric-val red">Venom</span></div>
+        </div>
+        <div class="card-num" style="color:rgba(200,168,120,0.03)">04</div>
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--gold)"></div>
+      </div>
+
     </div>
   </div>
 
@@ -554,6 +579,7 @@
       <div class="log-line"><div class="log-time">23:07</div><div class="log-agent">VENOM</div><div class="log-msg"><strong>SSH TUNNEL</strong> — NordVPN meshnet, remote installatie gestart</div></div>
       <div class="log-line"><div class="log-time">22:41</div><div class="log-agent">VENOM</div><div class="log-msg"><strong>OPENCLAW INSTALLED</strong> — Node v25.8 / OpenClaw 2026.3.8</div></div>
       <div class="log-line"><div class="log-time">22:04</div><div class="log-agent">SYSTEM</div><div class="log-msg"><strong>MAC MINI M4 PRO</strong> aangekomen op kantoor GEKKO, Rotterdam</div></div>
+      <div class="log-line"><div class="log-time">11:00</div><div class="log-agent" style="color:var(--gold)">MIDAS</div><div class="log-msg"><strong>AGENT LIVE</strong> — Finance agent gedeployed, Jasmijn Kerklaan gekoppeld via Telegram</div></div>
       <div class="log-line"><div class="log-time">09:00</div><div class="log-agent">CRON</div><div class="log-msg"><strong>MORNING BRIEF</strong> verzonden — portfolio + email + markt + crypto</div></div>
     </div>
     <div class="panel">
@@ -572,7 +598,7 @@
   </div>
 
   <footer>
-    <div class="footer-text">GEKKO Agency B.V. &nbsp;///&nbsp; Agent Hub v1.0 &nbsp;///&nbsp; 9 maart 2026</div>
+    <div class="footer-text">GEKKO Agency B.V. &nbsp;///&nbsp; Agent Hub v1.1 &nbsp;///&nbsp; 11 maart 2026</div>
     <div class="footer-text">VENOM 🖤 &nbsp;///&nbsp; Altijd Aan &nbsp;///&nbsp; Mac Mini M4 Pro</div>
   </footer>
 
